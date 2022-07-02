@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tsuuch</string>
+
+    <string name="toast_requires_permission_format">Requires permission %s</string>
+    <string name="info_view_default">Tsuuch</string>
+    <string name="latlng_format">latitude = %f, longitude = %f</string>
+    <string name="locate_button">Locate</string>
+</resources>
