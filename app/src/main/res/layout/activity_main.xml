@@ -6,16 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/place_button"
-        android:layout_width="91dp"
-        android:layout_height="61dp"
-        android:layout_marginBottom="36dp"
-        android:text="@string/place_button"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/locate_button" />
-
     <TextView
         android:id="@+id/info_view"
         android:layout_width="0dp"
@@ -33,20 +23,38 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/info_view"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/locate_button"
         android:layout_width="91dp"
         android:layout_height="61dp"
-        android:layout_marginStart="36dp"
-        android:layout_marginBottom="36dp"
+        android:layout_marginEnd="8dp"
         android:text="@string/locate_button"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/place_button"
+        app:layout_constraintEnd_toStartOf="@+id/place_button" />
+
+    <Button
+        android:id="@+id/place_button"
+        android:layout_width="91dp"
+        android:layout_height="61dp"
+        android:layout_marginStart="160dp"
+        android:layout_marginBottom="36dp"
+        android:text="@string/place_button"
+        app:layout_constraintBottom_toBottomOf="@+id/map_fragment"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/fore_button"
+        android:layout_width="91dp"
+        android:layout_height="61dp"
+        android:layout_marginStart="8dp"
+        android:text="@string/fore_button"
+        app:layout_constraintBottom_toBottomOf="@+id/place_button"
+        app:layout_constraintStart_toEndOf="@+id/place_button" />
 
     <TextView
         android:id="@+id/current_response_content"
@@ -54,6 +62,7 @@
         android:layout_height="wrap_content"
         android:text="@string/info_view_default"
         android:textSize="@dimen/font_size"
+        android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
