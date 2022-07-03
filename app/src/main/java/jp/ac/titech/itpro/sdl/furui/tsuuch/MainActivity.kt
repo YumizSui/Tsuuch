@@ -2,7 +2,9 @@ package jp.ac.titech.itpro.sdl.furui.tsuuch
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -17,10 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import java.util.*
@@ -39,8 +38,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         const val REQ_PERMISSIONS = 1234
     }
     private lateinit var infoView: TextView
-    private lateinit var responseView: TextView
     private lateinit var map: GoogleMap
+    private lateinit var foreButton: Button
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var request: LocationRequest
     private lateinit var callback: LocationCallback
@@ -59,7 +58,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_main)
         Places.initialize(this, BuildConfig.GOOGLE_MAPS_API_KEY, Locale.JAPANESE)
         infoView = findViewById(R.id.info_view)
-        responseView = findViewById(R.id.current_response_content)
 
         val fragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment?
@@ -88,17 +86,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         openIntent = Intent(this, MainActivity::class.java).let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
         }
+        foreButton = findViewById<Button>(R.id.fore_button)
 
-        val foreButton = findViewById<Button>(R.id.fore_button)
         foreButton.setOnClickListener {
+
             val intent = Intent(this, LocationService::class.java)
             if (!isOnService){
                 if(checkPermission(true)){
                     isOnService=true
+                    foreButton.text = "STOP"
+
                     startForegroundService(intent)
+
+                    val newFragment = StartDialog()
+                    newFragment.show(supportFragmentManager, "startDialog")
+
                 }
             } else {
                 isOnService=false
+                foreButton.text = "START"
                 stopService(intent)
             }
         }
@@ -127,10 +133,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.d(TAG, "onStop")
     }
 
+    @SuppressLint("MissingPermission")
     override fun onMapReady(map: GoogleMap) {
+        val OOO = LatLng(35.6048588,139.6816903)
         Log.d(TAG, "onMapReady")
-        map.moveCamera(CameraUpdateFactory.zoomTo(15f))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(OOO, 15f))
         this.map = map
+        val uiSettings: UiSettings = map.uiSettings;
+        uiSettings.isZoomControlsEnabled = true
+        map.isMyLocationEnabled = true
+
     }
 
     override fun onDestroy() {
@@ -141,6 +153,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         super.onDestroy()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("isOnService", isOnService)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        isOnService = savedInstanceState.getBoolean("isOnService")
+        foreButton.text = if(isOnService) "STOP" else "START"
+    }
+
     @SuppressLint("MissingPermission")
     private fun startLocationUpdate(reqPermission: Boolean) {
         Log.d(TAG, "startLocationUpdate")
@@ -178,7 +202,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             ) {
                 if (reqPermission) {
                     ActivityCompat.requestPermissions(this,
-                        PERMISSIONS,
+                        arrayOf(
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION),
                         REQ_PERMISSIONS
                     )
                 } else {
@@ -205,27 +231,5 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         return true
     }
-
-    private fun createNotificationChannel() {
-        val name = "Tsuuch"
-        val desc = "現在いる駅を通知する"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(channelID, name, importance)
-        channel.description = desc
-        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-    }
-
-    private fun createNotificationChannelLocationService() {
-        val name = "Tsuuch Service"
-        val desc = "Foreground Service"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(LocationService.channelID, name, importance)
-        channel.description = desc
-        notificationManagerService = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManagerService.createNotificationChannel(channel)
-    }
-
-
 
 }

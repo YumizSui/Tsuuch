@@ -2,10 +2,7 @@ package jp.ac.titech.itpro.sdl.furui.tsuuch
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
@@ -66,13 +63,14 @@ class LocationService : Service() {
             }
         }
 
+
         val openIntent = Intent(this, MainActivity::class.java).let {
-            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getActivity(this, 3333, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         }
         val notification = NotificationCompat.Builder(this, channelID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("位置情報")
-            .setContentText("\uD83D\uDDFE位置情報を取得中")
+            .setContentTitle("位置情報\uD83D\uDDFE")
+            .setContentText("位置情報を取得中\uD83D\uDDFE")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(openIntent)
             .build()
@@ -173,7 +171,7 @@ class LocationService : Service() {
             previouslyNotifiedStation = lastStation
 
             val openIntent = Intent(this, MainActivity::class.java).let {
-                PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.getActivity(this, 3334, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             }
             val notification = NotificationCompat.Builder(this, MainActivity.channelID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -185,7 +183,6 @@ class LocationService : Service() {
                 .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
                 .build()
             notificationManager.notify(notificationID, notification)
-//            startForeground(notificationID, notification)
         }
     }
 
