@@ -12,7 +12,7 @@ class StartDialog : DialogFragment() {
 
             return AlertDialog.Builder(getActivity())
             .setTitle("\uD83D\uDE8Bフォアグラウンドで動作中\uD83D\uDE8B")
-            .setMessage("位置情報はフォアグラウンドで取得されています。\n位置情報の取得を停止するときはアプリを終了するか、STOPボタンを押してください。")
+            .setMessage("位置情報をフォアグラウンドで取得しています。\n位置情報の取得を停止するときはアプリを終了するか、STOPボタンを押してください。")
             .setPositiveButton("OK", null)
             .create()
     }

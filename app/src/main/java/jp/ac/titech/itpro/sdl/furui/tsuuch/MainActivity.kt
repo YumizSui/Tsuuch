@@ -89,25 +89,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         foreButton = findViewById<Button>(R.id.fore_button)
 
         foreButton.setOnClickListener {
-
-            val intent = Intent(this, LocationService::class.java)
-            if (!isOnService){
-                if(checkPermission(true)){
-                    isOnService=true
-                    foreButton.text = "STOP"
-
-                    startForegroundService(intent)
-
-                    val newFragment = StartDialog()
-                    newFragment.show(supportFragmentManager, "startDialog")
-
-                }
-            } else {
-                isOnService=false
-                foreButton.text = "START"
-                stopService(intent)
-            }
+            changeService()
         }
+        changeService()
     }
 
 
@@ -137,7 +121,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         val OOO = LatLng(35.6048588,139.6816903)
         Log.d(TAG, "onMapReady")
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(OOO, 15f))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(OOO, 17f))
         this.map = map
         val uiSettings: UiSettings = map.uiSettings;
         uiSettings.isZoomControlsEnabled = true
@@ -165,6 +149,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         foreButton.text = if(isOnService) "STOP" else "START"
     }
 
+    private fun changeService(){
+        val intent = Intent(this, LocationService::class.java)
+        if (!isOnService){
+            if(checkPermission(true)){
+                isOnService=true
+                foreButton.text = "STOP"
+
+                startForegroundService(intent)
+
+                val newFragment = StartDialog()
+                newFragment.show(supportFragmentManager, "startDialog")
+
+            }
+        } else {
+            isOnService=false
+            foreButton.text = "START"
+            stopService(intent)
+        }
+    }
     @SuppressLint("MissingPermission")
     private fun startLocationUpdate(reqPermission: Boolean) {
         Log.d(TAG, "startLocationUpdate")
