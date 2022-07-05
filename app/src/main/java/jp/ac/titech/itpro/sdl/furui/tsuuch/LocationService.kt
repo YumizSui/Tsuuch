@@ -17,6 +17,7 @@ import com.google.android.libraries.places.ktx.api.net.awaitFindCurrentPlace
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 
 class LocationService : Service() {
     companion object {
@@ -39,6 +40,8 @@ class LocationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        Places.initialize(this, BuildConfig.GOOGLE_MAPS_API_KEY, Locale.JAPANESE)
+
         placesClient = Places.createClient(this)
 
         request = LocationRequest.create().apply {
@@ -123,7 +126,8 @@ class LocationService : Service() {
                 val response = placesClient.awaitFindCurrentPlace(placeFields)
                 val station = response.findStation()
 
-                notifyFlag = previouslyNotifiedStation?.id != station?.id
+                notifyFlag = station != null && (previouslyNotifiedStation?.id != station.id)
+
                 lastStation = station
                 if (station != null) {
                     Log.d(TAG, stringify(station))
