@@ -152,7 +152,7 @@ class LocationService : Service() {
     private fun createNotificationChannel() {
         val name = "Tsuuch"
         val desc = "現在いる駅を通知する"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(MainActivity.channelID, name, importance)
         channel.description = desc
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -179,12 +179,13 @@ class LocationService : Service() {
             }
             val notification = NotificationCompat.Builder(this, MainActivity.channelID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("電車は\uD83D\uDE8B 駅\uD83D\uDE89の近くです")
+                .setContentTitle("電車\uD83D\uDE8Bは駅\uD83D\uDE89の近くです")
                 .setContentText("今いるのは"+ lastStation!!.name+"\uD83D\uDE89です")
                 .setContentIntent(openIntent)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
-                .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .build()
             notificationManager.notify(notificationID, notification)
         }

@@ -88,9 +88,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         foreButton = findViewById<Button>(R.id.fore_button)
 
         foreButton.setOnClickListener {
-            changeService()
+            checkBackGroundAndChangeService()
         }
-        changeService()
+        checkBackGroundAndChangeService()
     }
 
 
@@ -167,6 +167,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             stopService(intent)
         }
     }
+    private fun checkBackGroundAndChangeService() {
+        if (!checkLocationPermission())
+            return
+        Log.d(TAG, "AAAA")
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                REQ_PERMISSIONS)
+        } else {
+            changeService()
+        }
+    }
+    private fun checkLocationPermission() : Boolean {
+        return ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
     @SuppressLint("MissingPermission")
     private fun startLocationUpdate(reqPermission: Boolean) {
         Log.d(TAG, "startLocationUpdate")
@@ -196,17 +218,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun checkPermission(reqPermission: Boolean):Boolean {
         for (permission in arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )) {
             if (ContextCompat.checkSelfPermission(
                     this,
                     permission
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 if (reqPermission) {
-                    ActivityCompat.requestPermissions(this,
+                    ActivityCompat.requestPermissions(
+                        this,
                         arrayOf(
                             Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACCESS_FINE_LOCATION),
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ),
                         REQ_PERMISSIONS
                     )
                 } else {
@@ -215,21 +240,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 return false
             }
-        }
-        if (ActivityCompat
-                .checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) !=
-            PackageManager.PERMISSION_GRANTED){
-            if(reqPermission){
-                ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                    REQ_PERMISSIONS
-                )
-            }else {
-                val text = getString(R.string.toast_requires_permission_format, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-            }
-            return false
-
         }
         return true
     }
