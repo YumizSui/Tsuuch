@@ -4,16 +4,20 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.*
 import android.content.Intent
+import android.location.Location
+
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.ktx.api.net.awaitFindCurrentPlace
+import com.google.maps.android.SphericalUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +29,8 @@ class LocationService : Service() {
         private const val notificationID = 1
         private const val notificationIDService = 2
         const val channelID = "channel2"
+        const val thresholdVelocity = 4.0
+        const val marginVelocity = 1.0
     }
 
     private lateinit var request: LocationRequest
@@ -37,6 +43,11 @@ class LocationService : Service() {
     private var previouslyNotifiedStation: Place? = null
     private var lastStation: Place? = null
     private var notifyFlag = false
+    private var prvVelocity = 0.0
+    private var prvTime = System.currentTimeMillis()
+    private var prvLatLng: LatLng? = null
+    private var nowStopping = false
+
 
     override fun onCreate() {
         super.onCreate()
@@ -58,11 +69,31 @@ class LocationService : Service() {
         callback = object : LocationCallback() {
             @SuppressLint("MissingPermission")
             override fun onLocationResult(locationResult: LocationResult) {
+
                 locationResult.lastLocation?.let{
                     Log.d(TAG, "onLocationResult: ${it.latitude} , ${it.longitude}")
+                    val currentLatLng = LatLng(it.latitude, it.longitude)
+                    val currentTime = System.currentTimeMillis()
+                    prvLatLng?.let {
+                        val distance = SphericalUtil.computeDistanceBetween(currentLatLng, prvLatLng)
+                        val diffTime = currentTime-prvTime
+                        val velocity = distance/diffTime*1000
+                        Log.d(TAG, "distance, velocity diffTime: $distance $velocity $diffTime")
+                        if (!nowStopping && velocity < thresholdVelocity-marginVelocity) {
+                            Log.d(TAG, "now stopping")
+                            nowStopping = true
+                            findCurrentPlace()
+                        }
+                        if(nowStopping && velocity > thresholdVelocity+marginVelocity) {
+                            Log.d(TAG, "not stopping")
+                            nowStopping=false
+                        }
+                        prvVelocity=velocity
+
+                    }
+                    prvTime=currentTime
+                    prvLatLng = currentLatLng
                 }
-                findCurrentPlace()
-                stationNotification()
             }
         }
 
@@ -123,12 +154,14 @@ class LocationService : Service() {
             listOf(Place.Field.NAME, Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.TYPES)
         CoroutineScope(Dispatchers.Default).launch {
             try {
+                Log.d(TAG,"place client called")
                 val response = placesClient.awaitFindCurrentPlace(placeFields)
                 val station = response.findStation()
 
                 notifyFlag = station != null && (previouslyNotifiedStation?.id != station.id)
 
                 lastStation = station
+                stationNotification()
                 if (station != null) {
                     Log.d(TAG, stringify(station))
                 } else {
@@ -213,4 +246,3 @@ fun FindCurrentPlaceResponse.findStation(): Place? {
     }
     return null
 }
-
