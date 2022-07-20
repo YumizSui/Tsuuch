@@ -29,8 +29,8 @@ class LocationService : Service() {
         private const val notificationID = 1
         private const val notificationIDService = 2
         const val channelID = "channel2"
-        const val thresholdVelocity = 4.0
-        const val marginVelocity = 1.0
+        const val stopVelocity = 4.0
+        const val moveVelocity = 10.0
     }
 
     private lateinit var request: LocationRequest
@@ -56,7 +56,7 @@ class LocationService : Service() {
         placesClient = Places.createClient(this)
 
         request = LocationRequest.create().apply {
-            interval = 10000L
+            interval = 5000L
             fastestInterval = 5000L
             priority = Priority.PRIORITY_HIGH_ACCURACY
         }
@@ -79,12 +79,12 @@ class LocationService : Service() {
                         val diffTime = currentTime-prvTime
                         val velocity = distance/diffTime*1000
                         Log.d(TAG, "distance, velocity diffTime: $distance $velocity $diffTime")
-                        if (!nowStopping && velocity < thresholdVelocity-marginVelocity) {
+                        if (!nowStopping && velocity < stopVelocity) {
                             Log.d(TAG, "now stopping")
                             nowStopping = true
                             findCurrentPlace()
                         }
-                        if(nowStopping && velocity > thresholdVelocity+marginVelocity) {
+                        if(nowStopping && velocity > moveVelocity) {
                             Log.d(TAG, "not stopping")
                             nowStopping=false
                         }
@@ -215,6 +215,18 @@ class LocationService : Service() {
                 .setContentTitle("電車\uD83D\uDE8Bは駅\uD83D\uDE89の近くです")
                 .setContentText("今いるのは"+ lastStation!!.name+"\uD83D\uDE89です")
                 .setContentIntent(openIntent)
+                .setOnlyAlertOnce(true)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .build()
+            notificationManager.notify(notificationID, notification)
+        } else {
+
+            val notification = NotificationCompat.Builder(this, MainActivity.channelID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("止まったよ")
+                .setContentText("はしれ！")
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
