@@ -221,18 +221,6 @@ class LocationService : Service() {
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .build()
             notificationManager.notify(notificationID, notification)
-        } else {
-
-            val notification = NotificationCompat.Builder(this, MainActivity.channelID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("止まったよ")
-                .setContentText("はしれ！")
-                .setOnlyAlertOnce(true)
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .build()
-            notificationManager.notify(notificationID, notification)
         }
     }
 
